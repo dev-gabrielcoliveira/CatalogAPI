@@ -20,6 +20,9 @@ namespace FCG.CatalogAPI.Application.Service
 
             var jogo = this.ObterPorId(input.IdJogo);
 
+            if (jogo == null)
+                throw new ArgumentException("Jogo não encontrado");
+
             jogo.Descricao = input.Descricao;
             jogo.Nome = input.Nome;
             jogo.Preco = input.Preco;

@@ -14,7 +14,7 @@ metadata:
   namespace: default
 type: Opaque
 stringData:
-  ConnectionStrings__CatalogConnection: "Server=sqlserver-service;Database=Db_Jogos;User Id=sa;Password=SuaSenhaForte123!;TrustServerCertificate=True;"
+  connection-string: "Server=sqlserver-service;Database=Db_Jogos;User Id=sa;Password=SuaSenhaForte123!;TrustServerCertificate=True;"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -37,11 +37,15 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
+        env:
+        - name: ConnectionStrings__CatalogConnection
+          valueFrom:
+            secretKeyRef:
+              name: catalog-secret
+              key: connection-string
         envFrom:
         - configMapRef:
             name: catalog-config
-        - secretRef:
-            name: catalog-secret
 ---
 apiVersion: v1
 kind: Service
