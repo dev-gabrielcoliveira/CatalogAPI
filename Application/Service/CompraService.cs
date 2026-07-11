@@ -1,5 +1,5 @@
 ﻿using FCG.CatalogAPI.Application.DTOs;
-using FCG.CatalogAPI.Application.Events;
+using FCG.Application.Events;
 using FCG.CatalogAPI.Application.Interfaces.Service;
 using MassTransit;
 

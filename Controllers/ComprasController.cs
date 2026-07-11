@@ -1,8 +1,5 @@
 ﻿using FCG.CatalogAPI.Application.DTOs;
-using FCG.CatalogAPI.Application.Events;
 using FCG.CatalogAPI.Application.Interfaces.Service;
-using FCG.CatalogAPI.Application.Service;
-using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

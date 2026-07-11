@@ -1,8 +1,9 @@
+using FCG.CatalogAPI.Application.Consumers;
 using FCG.CatalogAPI.Application.Interfaces.Repository;
 using FCG.CatalogAPI.Application.Interfaces.Service;
 using FCG.CatalogAPI.Application.Service;
-using FCG.CatalogAPI.Infrastructure.Repositories;
 using FCG.CatalogAPI.Infrastructure.Persistence;
+using FCG.CatalogAPI.Infrastructure.Repositories;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -125,6 +126,8 @@ builder.Services.AddSwaggerGen();
 #region Quando for executar local na máquina
 builder.Services.AddMassTransit(busRegistration =>
 {
+    busRegistration.AddConsumer<PaymentProcessedConsumer>();
+
     busRegistration.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host("localhost", "/", h =>
@@ -132,6 +135,8 @@ builder.Services.AddMassTransit(busRegistration =>
             h.Username("guest");
             h.Password("guest");
         });
+
+        cfg.ConfigureEndpoints(context);
     });
 });
 #endregion
