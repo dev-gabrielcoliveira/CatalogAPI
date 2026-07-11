@@ -94,28 +94,47 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<IJogoRepository, JogoRepository>();
+builder.Services.AddScoped<ICompraService, CompraService>();
 builder.Services.AddScoped<IJogoService, JogoService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+
+#region Quando utilizar docker e kubernates
+
+//builder.Services.AddMassTransit(busRegistration =>
+//{
+//    busRegistration.UsingRabbitMq((context, cfg) =>
+//    {
+
+//        // Tenta ler do appsettings/Kubernetes. Se não achar, usa o fallback seguro
+//        var rabbitHost = builder.Configuration["RabbitMq:Host"] ?? "rabbitmq-service";
+
+//        cfg.Host(rabbitHost, "/", hostConfigurator =>
+//        {
+//            hostConfigurator.Username("guest");
+//            hostConfigurator.Password("guest");
+//        });
+//    });
+//});
+
+#endregion
+
+
+#region Quando for executar local na máquina
 builder.Services.AddMassTransit(busRegistration =>
 {
     busRegistration.UsingRabbitMq((context, cfg) =>
     {
-
-        // Tenta ler do appsettings/Kubernetes. Se não achar, usa o fallback seguro
-        var rabbitHost = builder.Configuration["RabbitMq:Host"] ?? "rabbitmq-service";
-
-        cfg.Host(rabbitHost, "/", hostConfigurator =>
+        cfg.Host("localhost", "/", h =>
         {
-            hostConfigurator.Username("guest");
-            hostConfigurator.Password("guest");
+            h.Username("guest");
+            h.Password("guest");
         });
-
-        cfg.ConfigureEndpoints(context);
-
     });
 });
+#endregion
 
 var app = builder.Build();
 
