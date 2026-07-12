@@ -1,0 +1,16 @@
+env:
+  - name: ConnectionStrings__CatalogConnection
+    valueFrom:
+      secretKeyRef:
+        name: catalog-secret
+        key: connection-string
+
+  - name: Jwt__Key
+    valueFrom:
+      secretKeyRef:
+        name: catalog-secret
+        key: jwt-key
+
+envFrom:
+  - configMapRef:
+      name: catalog-config
