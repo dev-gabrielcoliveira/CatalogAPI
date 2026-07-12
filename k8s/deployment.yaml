@@ -1,16 +1,43 @@
-env:
-  - name: ConnectionStrings__CatalogConnection
-    valueFrom:
-      secretKeyRef:
-        name: catalog-secret
-        key: connection-string
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-deployment
+  namespace: default
 
-  - name: Jwt__Key
-    valueFrom:
-      secretKeyRef:
-        name: catalog-secret
-        key: jwt-key
+spec:
+  replicas: 1
 
-envFrom:
-  - configMapRef:
-      name: catalog-config
+  selector:
+    matchLabels:
+      app: catalog-api
+
+  template:
+    metadata:
+      labels:
+        app: catalog-api
+
+    spec:
+      containers:
+      - name: catalog-api
+        image: fcg-catalog-api:v1
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 8080
+
+        env:
+        - name: ConnectionStrings__CatalogConnection
+          valueFrom:
+            secretKeyRef:
+              name: catalog-secret
+              key: connection-string
+
+        - name: Jwt__Key
+          valueFrom:
+            secretKeyRef:
+              name: catalog-secret
+              key: jwt-key
+
+        envFrom:
+        - configMapRef:
+            name: catalog-config
