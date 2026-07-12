@@ -1,10 +1,10 @@
-# FCG.CatalogAPI
+# CatalogAPI
 
 Microsserviço responsável pelo gerenciamento do catálogo de jogos da plataforma FIAP Cloud Games (FCG).
 
 ## Sobre o projeto
 
-O FCG.CatalogAPI faz parte da arquitetura de microsserviços da plataforma FIAP Cloud Games.
+O CatalogAPI faz parte da arquitetura de microsserviços da plataforma FIAP Cloud Games.
 
 Este serviço é responsável pelo gerenciamento dos jogos disponíveis na plataforma, incluindo cadastro, consulta, atualização e exclusão de jogos, além de iniciar o fluxo de compra através de eventos assíncronos.
 
