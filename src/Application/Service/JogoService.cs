@@ -1,6 +1,7 @@
 ﻿using FCG.CatalogAPI.Application.DTOs;
-using FCG.CatalogAPI.Application.Interfaces.Service;
 using FCG.CatalogAPI.Application.Interfaces.Repository;
+using FCG.CatalogAPI.Application.Interfaces.Service;
+using FCG.CatalogAPI.Application.Validators;
 using FCG.CatalogAPI.Domain.Entities;
 
 namespace FCG.CatalogAPI.Application.Service
@@ -8,15 +9,24 @@ namespace FCG.CatalogAPI.Application.Service
     public class JogoService : IJogoService
     {
         private readonly IJogoRepository _jogoRepository;
+        private readonly JogoValidators _validator;
 
         public JogoService(IJogoRepository jogoRepository)
         {
             _jogoRepository = jogoRepository;
+            _validator = new JogoValidators();
         }
 
         public void Atualizar(JogoAtualizarInput input)
         {
-            ValidarDadosJogo(input.Nome, input.Descricao, input.Preco);
+            if (!_validator.NomeValido(input.Nome))
+                throw new ArgumentException("Nome inválido");
+
+            if (!_validator.DescricaoValida(input.Descricao))
+                throw new ArgumentException("Descrição inválida");
+
+            if (!_validator.PrecoValido(input.Preco))
+                throw new ArgumentException("Preço inválido");
 
             var jogo = this.ObterPorId(input.IdJogo);
 
@@ -32,7 +42,14 @@ namespace FCG.CatalogAPI.Application.Service
 
         public Jogo Criar(JogoCriarInput input)
         {
-            ValidarDadosJogo(input.Nome, input.Descricao, input.Preco);
+            if (!_validator.NomeValido(input.Nome))
+                throw new ArgumentException("Nome inválido");
+
+            if (!_validator.DescricaoValida(input.Descricao))
+                throw new ArgumentException("Descrição inválida");
+
+            if (!_validator.PrecoValido(input.Preco))
+                throw new ArgumentException("Preço inválido");
 
             var jogo = new Jogo
             {
@@ -71,16 +88,5 @@ namespace FCG.CatalogAPI.Application.Service
                 .Where(j => j.Situacao == "Ativo");
         }
 
-        private static void ValidarDadosJogo(string? nome, string? descricao, decimal preco)
-        {
-            if (preco < 0)
-                throw new ArgumentException("Preço inválido.");
-
-            if (string.IsNullOrWhiteSpace(nome))
-                throw new ArgumentException("Nome inválido");
-
-            if (string.IsNullOrWhiteSpace(descricao))
-                throw new ArgumentException("Descrição inválida");
-        }
     }
 }
