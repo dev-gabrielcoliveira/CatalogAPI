@@ -24,6 +24,9 @@ namespace FCG.CatalogAPI.Application.Service
 
         public async Task EfetuarCompra(CompraInput input)
         {
+            if (input.IdUsuario <= 0)
+                throw new ArgumentException("Usuário inválido.");
+
             var jogo = _jogoService.ObterPorId(input.IdJogo);
 
             if (jogo == null)

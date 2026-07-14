@@ -1,4 +1,4 @@
-using FCG.CatalogAPI.Application.Consumers;
+﻿using FCG.CatalogAPI.Application.Consumers;
 using FCG.CatalogAPI.Application.Interfaces.Repository;
 using FCG.CatalogAPI.Application.Interfaces.Service;
 using FCG.CatalogAPI.Application.Service;
@@ -54,7 +54,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Api de CatÁlogos", Version = "v1" });
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Api de Catálogos", Version = "v1" });
 
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
@@ -90,7 +90,7 @@ builder.Services.AddSwaggerGen(c =>
         c.IncludeXmlComments(xmlPath);
     }
 
-});
+});  
 
 
 builder.Services.AddControllers();
