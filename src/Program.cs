@@ -115,7 +115,11 @@ builder.Services.AddMassTransit(busRegistration =>
         });
 
         cfg.UseRawJsonSerializer();
-        cfg.ConfigureEndpoints(context);
+
+        cfg.ReceiveEndpoint("catalog-payment-processed", e =>
+        {
+            e.ConfigureConsumer<PaymentProcessedConsumer>(context);
+        });
     });
 });
 
