@@ -18,26 +18,32 @@ spec:
 
     spec:
       containers:
-      - name: catalog-api
-        image: fcg-catalog-api:v1
-        imagePullPolicy: IfNotPresent
+        - name: catalog-api
+          image: fcg-catalog-api:v1
+          imagePullPolicy: IfNotPresent
 
-        ports:
-        - containerPort: 8080
+          ports:
+            - containerPort: 8080
 
-        env:
-        - name: ConnectionStrings__CatalogConnection
-          valueFrom:
-            secretKeyRef:
-              name: catalog-secret
-              key: connection-string
+          env:
+            - name: ConnectionStrings__CatalogConnection
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-secret
+                  key: connection-string
 
-        - name: Jwt__Key
-          valueFrom:
-            secretKeyRef:
-              name: catalog-secret
-              key: jwt-key
+            - name: Jwt__Key
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-secret
+                  key: jwt-key
 
-        envFrom:
-        - configMapRef:
-            name: catalog-config
+            - name: Jwt__Issuer
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-secret
+                  key: jwt-issuer
+
+          envFrom:
+            - configMapRef:
+                name: catalog-config
