@@ -3,25 +3,24 @@ kind: Deployment
 metadata:
   name: catalog-deployment
   namespace: default
-
 spec:
   replicas: 1
-
   selector:
     matchLabels:
       app: catalog-api
-
   template:
     metadata:
       labels:
         app: catalog-api
-
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
     spec:
       containers:
         - name: catalog-api
           image: fcg-catalog-api:v1
-          imagePullPolicy: IfNotPresent
-
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
 

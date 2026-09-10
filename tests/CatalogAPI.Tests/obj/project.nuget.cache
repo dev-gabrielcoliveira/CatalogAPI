@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "xSE5zE60Onk=",
+  "dgSpecHash": "QOp5cSO9K3o=",
   "success": true,
-  "projectFilePath": "C:\\Entrega\\CatalogAPI\\tests\\CatalogAPI.Tests\\CatalogAPI.Tests.csproj",
+  "projectFilePath": "C:\\TechChallenge\\CatalogAPI\\tests\\CatalogAPI.Tests\\CatalogAPI.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\GABRIEL\\.nuget\\packages\\coverlet.collector\\6.0.0\\coverlet.collector.6.0.0.nupkg.sha512",
     "C:\\Users\\GABRIEL\\.nuget\\packages\\microsoft.codecoverage\\17.8.0\\microsoft.codecoverage.17.8.0.nupkg.sha512",

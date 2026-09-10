@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
+using Prometheus;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -125,6 +126,13 @@ builder.Services.AddMassTransit(busRegistration =>
 
 var app = builder.Build();
 
+// 1. Roteamento base
+app.UseRouting();
+
+// 2. Métricas HTTP do Prometheus (deve vir logo após o UseRouting)
+app.UseHttpMetrics();
+
+// 3. Migrations automáticas
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -138,14 +146,15 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// 4. Swagger e Segurança
 app.UseSwagger();
 app.UseSwaggerUI();
-
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
+// 5. Endpoints e Métricas finais
 app.MapControllers();
+app.MapMetrics(); // Expõe o /metrics
 
 app.Run();
