@@ -2,7 +2,7 @@
 
 namespace FCG.CatalogAPI.Application.Interfaces
 {
-    public interface IRepository<T> where T : EntityBase
+    public interface IRepository<T>
     {
         void Alterar(T Entidade);
         List<T> ObterTodos();

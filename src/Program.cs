@@ -1,16 +1,15 @@
 ﻿using FCG.CatalogAPI.Application.Consumers;
-using FCG.CatalogAPI.Application.Interfaces.Repository;
+using FCG.CatalogAPI.Domain.Interfaces;
 using FCG.CatalogAPI.Application.Interfaces.Service;
 using FCG.CatalogAPI.Application.Service;
-using FCG.CatalogAPI.Infrastructure.Persistence;
 using FCG.CatalogAPI.Infrastructure.Repositories;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
+using Prometheus;
 using Serilog;
 using System.Text;
-using Prometheus;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,11 +20,19 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Configurando o EntityFramework, para se comunicar com o banco de dados e realizar as migrations
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+
+// Configuração do mongo Db
+builder.Services.AddSingleton<IMongoClient>(sp =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("CatalogConnection"),
-        sqlServerOptions => sqlServerOptions.MigrationsHistoryTable("migrations_jogos"));
+    var connectionString = builder.Configuration.GetConnectionString("MongoDbConnection") ?? "mongodb://localhost:27017";
+    return new MongoClient(connectionString);
+});
+
+builder.Services.AddScoped<IMongoDatabase>(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    // Nome do banco que definimos anteriormente para o catálogo
+    return client.GetDatabase("FCGCatalogDB");
 });
 
 string key = builder.Configuration["Jwt:Key"] ?? "";
@@ -85,21 +92,17 @@ builder.Services.AddSwaggerGen(c =>
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
-    // O 'if' garante que se o arquivo sumir por algum motivo, a API n�o crasha
     if (File.Exists(xmlPath))
     {
         c.IncludeXmlComments(xmlPath);
     }
-
-});  
-
+});
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<IJogoRepository, JogoRepository>();
 builder.Services.AddScoped<ICompraService, CompraService>();
 builder.Services.AddScoped<IJogoService, JogoService>();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddMassTransit(busRegistration =>
 {
@@ -129,31 +132,20 @@ var app = builder.Build();
 // 1. Roteamento base
 app.UseRouting();
 
-// 2. Métricas HTTP do Prometheus (deve vir logo após o UseRouting)
+// 2. Métricas HTTP do Prometheus
 app.UseHttpMetrics();
 
-// 3. Migrations automáticas
-using (var scope = app.Services.CreateScope())
-{
-    try
-    {
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        db.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Erro ao rodar migrations: {ex.Message}");
-    }
-}
+// Nota: Bloco de migrations do Entity Framework removido, 
+// pois o MongoDB gerencia coleções dinamicamente.
 
-// 4. Swagger e Segurança
+// 3. Swagger e Segurança
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 5. Endpoints e Métricas finais
+// 4. Endpoints e Métricas finais
 app.MapControllers();
 app.MapMetrics(); // Expõe o /metrics
 

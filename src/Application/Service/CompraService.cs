@@ -27,7 +27,7 @@ namespace FCG.CatalogAPI.Application.Service
             if (input.IdUsuario <= 0)
                 throw new ArgumentException("Usuário inválido.");
 
-            var jogo = _jogoService.ObterPorId(input.IdJogo);
+            var jogo = await _jogoService.ObterPorIdAsync(input.IdJogo.ToString());
 
             if (jogo == null)
                 throw new KeyNotFoundException("Jogo não encontrado.");
@@ -35,7 +35,7 @@ namespace FCG.CatalogAPI.Application.Service
             var orderPlacedEvent = new OrderPlacedEvent
             {
                 UserId = input.IdUsuario,
-                GameId = jogo.Id,
+                GameId = Convert.ToInt32(jogo.Id),
                 Price = jogo.Preco
             };
 

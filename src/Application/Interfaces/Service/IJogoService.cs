@@ -5,10 +5,10 @@ namespace FCG.CatalogAPI.Application.Interfaces.Service
 {
     public interface IJogoService
     {
-        IEnumerable<Jogo> ObterTodos(); 
-        Jogo? ObterPorId(int id);       
-        Jogo Criar(JogoCriarInput input);
-        void Atualizar(JogoAtualizarInput input);
-        void Excluir(int id);
+        Task<IEnumerable<Jogo>> ObterTodosAsync(); 
+        Task<Jogo?> ObterPorIdAsync(string id);       
+        Task<Jogo> CriarAsync(JogoCriarInput input);
+        Task AtualizarAsync(JogoAtualizarInput input);
+        Task ExcluirAsync(string id);
     }
 }

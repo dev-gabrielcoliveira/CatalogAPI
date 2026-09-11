@@ -23,13 +23,12 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
-
           env:
-            - name: ConnectionStrings__CatalogConnection
+            - name: ConnectionStrings__MongoDbConnection
               valueFrom:
                 secretKeyRef:
                   name: catalog-secret
-                  key: connection-string
+                  key: ConnectionStrings__MongoDbConnection
 
             - name: Jwt__Key
               valueFrom:

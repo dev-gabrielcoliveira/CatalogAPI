@@ -1,27 +1,22 @@
-﻿using FCG.CatalogAPI.Domain.Entities;
+using FCG.CatalogAPI.Domain.Entities;
 using FCG.CatalogAPI.Domain.Interfaces;
 using MongoDB.Driver;
 
 namespace FCG.CatalogAPI.Infrastructure.Repositories
 {
-    public class JogoRepository : IJogoRepository
+    public class JogoMongoRepository : IJogoRepository
     {
         private readonly IMongoCollection<Jogo> _jogosCollection;
 
-        public JogoRepository(IMongoDatabase database)
+        // Injetando o IMongoDatabase diretamente que configuramos no Program.cs
+        public JogoMongoRepository(IMongoDatabase database)
         {
             _jogosCollection = database.GetCollection<Jogo>("Jogos");
         }
 
         public async Task AdicionarAsync(Jogo jogo)
         {
-            try
-            {
-                await _jogosCollection.InsertOneAsync(jogo);
-            } catch(Exception ex)
-            {
-                throw;
-            }
+            await _jogosCollection.InsertOneAsync(jogo);
         }
 
         public async Task<Jogo?> ObterPorIdAsync(string id)
@@ -36,6 +31,7 @@ namespace FCG.CatalogAPI.Infrastructure.Repositories
 
         public async Task AtualizarAsync(Jogo jogo)
         {
+            // Substitui o documento existente no banco que tenha o mesmo ID
             await _jogosCollection.ReplaceOneAsync(j => j.Id == jogo.Id, jogo);
         }
     }

@@ -2,7 +2,7 @@
 {
     public record JogoAtualizarInput
     (
-        int IdJogo,
+        string IdJogo,
         string Nome,
         string Descricao,
         decimal Preco 

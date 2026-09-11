@@ -7,12 +7,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FCG.CatalogAPI.Controllers
 {
-    /// <summary>
-    /// Responsável por gerenciar o catálogo de jogos da plataforma.
-    /// </summary>
-    /// <remarks>
-    /// Permite listar, buscar, cadastrar, atualizar e remover jogos.
-    /// </remarks>
     [ApiController]
     [Route("api/[controller]")]
     public class JogosController : ControllerBase
@@ -26,19 +20,15 @@ namespace FCG.CatalogAPI.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Busca todos os jogos ativos.
-        /// </summary>
-        /// <returns>Listagem de todos os jogos ativos no sistema.</returns>
         [HttpGet]
-        [Authorize(Policy = "AdministradorOuUsuario")] // Usuários comuns também listam jogos
+        [Authorize(Policy = "AdministradorOuUsuario")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<IEnumerable<Jogo>> ObterTodos()
+        public async Task<ActionResult<IEnumerable<Jogo>>> ObterTodos()
         {
             try
             {
-                var jogos = _jogoService.ObterTodos();
+                var jogos = await _jogoService.ObterTodosAsync();
                 return Ok(jogos);
             }
             catch (Exception ex)
@@ -48,21 +38,16 @@ namespace FCG.CatalogAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Busca um jogo específico pelo ID.
-        /// </summary>
-        /// <param name="id">Identificador do jogo.</param>
-        /// <returns>Dados do jogo solicitado.</returns>
-        [HttpGet("{id:int}")]
+        [HttpGet("{id}")]
         [Authorize(Policy = "AdministradorOuUsuario")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult ObterPorId([FromRoute, Range(1, int.MaxValue)] int id)
+        public async Task<IActionResult> ObterPorId(string id)
         {
             try
             {
-                var jogo = _jogoService.ObterPorId(id);
+                var jogo = await _jogoService.ObterPorIdAsync(id);
                 if (jogo == null)
                     return NotFound(new { mensagem = "Jogo não encontrado." });
 
@@ -75,23 +60,17 @@ namespace FCG.CatalogAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Cria um novo jogo no catálogo.
-        /// </summary>
-        /// <param name="input">Dados do jogo a ser criado.</param>
-        /// <returns>O jogo criado com seu respectivo ID.</returns>
         [HttpPost]
-        [Authorize(Policy = "Administrador")] // Apenas admin gerencia catálogo
+        [Authorize(Policy = "Administrador")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Criar([FromBody] JogoCriarInput input)
+        public async Task<IActionResult> Criar([FromBody] JogoCriarInput input)
         {
-
             try
             {
-                var jogoCriado = _jogoService.Criar(input);
-                _logger.LogInformation("Jogo '{Nome}' criado com sucesso.", input.Nome);
+                var jogoCriado = await _jogoService.CriarAsync(input);
+                _logger.LogInformation("Jogo '{Nome}' criado com sucesso no MongoDB.", input.Nome);
 
                 return CreatedAtAction(nameof(ObterPorId), new { id = jogoCriado.Id }, jogoCriado);
             }
@@ -106,30 +85,20 @@ namespace FCG.CatalogAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Atualiza os dados de um jogo existente.
-        /// </summary>
-        /// <param name="id">Identificador do jogo.</param>
-        /// <param name="jogo">Novos dados do jogo.</param>
-        /// <returns>Confirmação da atualização sem corpo de retorno.</returns>
-        [HttpPut("{id:int}")]
+        [HttpPut("{id}")]
         [Authorize(Policy = "Administrador")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Atualizar(int id,[FromBody] JogoAtualizarInput inputJogo)
+        public async Task<IActionResult> Atualizar(string id, [FromBody] JogoAtualizarInput inputJogo)
         {
-            if (id != inputJogo.IdJogo) // Impede que o jogo errado seja alterado
+            if (id != inputJogo.IdJogo)
                 return BadRequest(new { mensagem = "O ID da URL não corresponde ao ID do corpo da requisição." });
-
-            var jogo = _jogoService.ObterPorId(id);
-            if (jogo == null)
-                return NotFound(new { mensagem = "Jogo não encontrado para atualização." });
 
             try
             {
-                _jogoService.Atualizar(inputJogo);
+                await _jogoService.AtualizarAsync(inputJogo);
                 _logger.LogInformation("Jogo com Id {Id} foi atualizado com sucesso.", id);
 
                 return NoContent();
@@ -145,28 +114,23 @@ namespace FCG.CatalogAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Remove logicamente um jogo do catálogo.
-        /// </summary>
-        /// <param name="id">Identificador do jogo.</param>
-        /// <returns>Confirmação da remoção.</returns>
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id}")]
         [Authorize(Policy = "Administrador")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Remover([FromRoute, Range(1, int.MaxValue)] int id)
+        public async Task<IActionResult> Remover(string id)
         {
             try
             {
-                var jogo = _jogoService.ObterPorId(id);
-                if (jogo == null)
-                    return NotFound(new { mensagem = "Jogo não encontrado." });
-
-                _jogoService.Excluir(id);
-                _logger.LogInformation("Jogo com Id {Id} foi desativado (Removido logicamente).", id);
+                await _jogoService.ExcluirAsync(id);
+                _logger.LogInformation("Jogo com Id {Id} foi desativado.", id);
 
                 return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { mensagem = ex.Message });
             }
             catch (Exception ex)
             {
