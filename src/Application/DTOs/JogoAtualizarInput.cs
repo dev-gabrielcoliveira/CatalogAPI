@@ -1,10 +1,27 @@
-﻿namespace FCG.CatalogAPI.Application.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FCG.CatalogAPI.Application.DTOs
 {
     public record JogoAtualizarInput
     (
-        string IdJogo,
+        [Required(ErrorMessage = "O ID é obrigatório.")]
+        int IdJogo,
+
+        [Required(ErrorMessage = "O nome é obrigatório.")]
         string Nome,
+
+        [StringLength(500, ErrorMessage = "A descrição não pode exceder 500 caracteres.")]
         string Descricao,
-        decimal Preco 
-    );
+
+        [Range(0.01, 10000.00, ErrorMessage = "O preço deve ser maior que zero.")]
+        decimal Preco,
+
+        List<string> Generos,
+        List<string> Plataformas
+    )
+    {
+        // Garante que as listas nunca venham nulas se omitidas no JSON de update
+        public List<string> Generos { get; init; } = Generos ?? [];
+        public List<string> Plataformas { get; init; } = Plataformas ?? [];
+    }
 }

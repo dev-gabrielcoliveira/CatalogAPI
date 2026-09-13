@@ -1,27 +1,35 @@
 using FCG.CatalogAPI.Domain.Entities;
+using FCG.CatalogAPI.Domain.Entities.FCG.CatalogAPI.Domain.Entities;
 using FCG.CatalogAPI.Domain.Interfaces;
 using MongoDB.Driver;
 
 namespace FCG.CatalogAPI.Infrastructure.Repositories
 {
-    public class JogoMongoRepository : IJogoRepository
+    public class JogoRepository : IJogoRepository
     {
         private readonly IMongoCollection<Jogo> _jogosCollection;
+        private readonly IMongoDatabase _database;
 
-        // Injetando o IMongoDatabase diretamente que configuramos no Program.cs
-        public JogoMongoRepository(IMongoDatabase database)
+        public JogoRepository(IMongoDatabase database)
         {
-            _jogosCollection = database.GetCollection<Jogo>("Jogos");
+            _database = database;
+            _jogosCollection = _database.GetCollection<Jogo>("jogos");
         }
 
-        public async Task AdicionarAsync(Jogo jogo)
+        private async Task<int> ObterProximoIdAsync(string nomeSequencia)
         {
-            await _jogosCollection.InsertOneAsync(jogo);
-        }
+            var colecaoContadores = _database.GetCollection<Contador>("contadores");
 
-        public async Task<Jogo?> ObterPorIdAsync(string id)
-        {
-            return await _jogosCollection.Find(j => j.Id == id).FirstOrDefaultAsync();
+            var filter = Builders<Contador>.Filter.Eq(c => c.Id, nomeSequencia);
+            var update = Builders<Contador>.Update.Inc(c => c.Valor, 1);
+            var options = new FindOneAndUpdateOptions<Contador>
+            {
+                IsUpsert = true,
+                ReturnDocument = ReturnDocument.After
+            };
+
+            var resultado = await colecaoContadores.FindOneAndUpdateAsync(filter, update, options);
+            return resultado.Valor;
         }
 
         public async Task<IEnumerable<Jogo>> ObterTodosAsync()
@@ -29,10 +37,20 @@ namespace FCG.CatalogAPI.Infrastructure.Repositories
             return await _jogosCollection.Find(_ => true).ToListAsync();
         }
 
+        public async Task<Jogo?> ObterPorIdAsync(int idJogo)
+        {
+            return await _jogosCollection.Find(j => j.IdJogo == idJogo).FirstOrDefaultAsync();
+        }
+
+        public async Task AdicionarAsync(Jogo jogo)
+        {
+            jogo.IdJogo = await ObterProximoIdAsync("jogo_id");
+            await _jogosCollection.InsertOneAsync(jogo);
+        }
+
         public async Task AtualizarAsync(Jogo jogo)
         {
-            // Substitui o documento existente no banco que tenha o mesmo ID
-            await _jogosCollection.ReplaceOneAsync(j => j.Id == jogo.Id, jogo);
+            await _jogosCollection.ReplaceOneAsync(j => j.IdJogo == jogo.IdJogo, jogo);
         }
     }
 }

@@ -23,9 +23,9 @@ namespace FCG.CatalogAPI.Application.Service
             return jogos.Where(j => j.Situacao == "Ativo");
         }
 
-        public async Task<Jogo?> ObterPorIdAsync(string id)
+        public async Task<Jogo?> ObterPorIdAsync(int idJogo)
         {
-            var jogo = await _jogoRepository.ObterPorIdAsync(id);
+            var jogo = await _jogoRepository.ObterPorIdAsync(idJogo);
             return jogo?.Situacao == "Ativo" ? jogo : null;
         }
 
@@ -45,7 +45,9 @@ namespace FCG.CatalogAPI.Application.Service
                 Nome = input.Nome,
                 Descricao = input.Descricao,
                 Preco = input.Preco,
-                Situacao = "Ativo"
+                Situacao = "Ativo",
+                Generos = input.Generos,
+                Plataformas = input.Plataformas
             };
 
             await _jogoRepository.AdicionarAsync(jogo);
@@ -72,13 +74,15 @@ namespace FCG.CatalogAPI.Application.Service
             jogo.Descricao = input.Descricao;
             jogo.Nome = input.Nome;
             jogo.Preco = input.Preco;
+            jogo.Generos = input.Generos;
+            jogo.Plataformas = input.Plataformas;
 
             await _jogoRepository.AtualizarAsync(jogo);
         }
 
-        public async Task ExcluirAsync(string id)
+        public async Task ExcluirAsync(int idJogo)
         {
-            var jogo = await _jogoRepository.ObterPorIdAsync(id);
+            var jogo = await _jogoRepository.ObterPorIdAsync(idJogo);
 
             if (jogo == null)
                 throw new ArgumentException("Jogo não encontrado");

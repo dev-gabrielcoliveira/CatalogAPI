@@ -3,7 +3,6 @@ using FCG.CatalogAPI.Application.Interfaces.Service;
 using FCG.CatalogAPI.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace FCG.CatalogAPI.Controllers
 {
@@ -38,16 +37,16 @@ namespace FCG.CatalogAPI.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{idJogo:int}")]
         [Authorize(Policy = "AdministradorOuUsuario")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ObterPorId(string id)
+        public async Task<IActionResult> ObterPorId(int idJogo)
         {
             try
             {
-                var jogo = await _jogoService.ObterPorIdAsync(id);
+                var jogo = await _jogoService.ObterPorIdAsync(idJogo);
                 if (jogo == null)
                     return NotFound(new { mensagem = "Jogo não encontrado." });
 
@@ -55,7 +54,7 @@ namespace FCG.CatalogAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao obter jogo com Id: {Id}", id);
+                _logger.LogError(ex, "Erro ao obter jogo com Id: {Id}", idJogo);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Erro interno no servidor." });
             }
         }
@@ -72,7 +71,7 @@ namespace FCG.CatalogAPI.Controllers
                 var jogoCriado = await _jogoService.CriarAsync(input);
                 _logger.LogInformation("Jogo '{Nome}' criado com sucesso no MongoDB.", input.Nome);
 
-                return CreatedAtAction(nameof(ObterPorId), new { id = jogoCriado.Id }, jogoCriado);
+                return CreatedAtAction(nameof(ObterPorId), new { idJogo = jogoCriado.IdJogo }, jogoCriado);
             }
             catch (ArgumentException ex)
             {
@@ -85,56 +84,63 @@ namespace FCG.CatalogAPI.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{idJogo:int}")]
         [Authorize(Policy = "Administrador")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Atualizar(string id, [FromBody] JogoAtualizarInput inputJogo)
+        public async Task<IActionResult> Atualizar(int idJogo, [FromBody] JogoAtualizarInput inputJogo)
         {
-            if (id != inputJogo.IdJogo)
+            if (idJogo != inputJogo.IdJogo)
                 return BadRequest(new { mensagem = "O ID da URL não corresponde ao ID do corpo da requisição." });
 
             try
             {
                 await _jogoService.AtualizarAsync(inputJogo);
-                _logger.LogInformation("Jogo com Id {Id} foi atualizado com sucesso.", id);
+                _logger.LogInformation("Jogo com Id {Id} foi atualizado com sucesso.", idJogo);
 
                 return NoContent();
             }
             catch (ArgumentException ex)
             {
+                if (ex.Message == "Jogo não encontrado")
+                    return NotFound(new { mensagem = ex.Message });
+
                 return BadRequest(new { mensagem = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao alterar jogo com Id: {Id}", id);
+                _logger.LogError(ex, "Erro ao alterar jogo com Id: {Id}", idJogo);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Erro interno no servidor." });
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{idJogo:int}")]
         [Authorize(Policy = "Administrador")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Remover(string id)
+        public async Task<IActionResult> Remover(int idJogo)
         {
             try
             {
-                await _jogoService.ExcluirAsync(id);
-                _logger.LogInformation("Jogo com Id {Id} foi desativado.", id);
+                await _jogoService.ExcluirAsync(idJogo);
+                _logger.LogInformation("Jogo com Id {Id} foi desativado.", idJogo);
 
                 return NoContent();
             }
             catch (ArgumentException ex)
             {
+                if (ex.Message == "Jogo não encontrado")
+                    return NotFound(new { mensagem = ex.Message });
+
                 return BadRequest(new { mensagem = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao excluir jogo com Id: {Id}", id);
+                _logger.LogError(ex, "Erro ao excluir jogo com Id: {Id}", idJogo);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Erro interno no servidor." });
             }
         }
