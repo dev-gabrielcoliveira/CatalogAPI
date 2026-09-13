@@ -35,6 +35,11 @@ builder.Services.AddScoped<IMongoDatabase>(sp =>
     return client.GetDatabase("FCGCatalogDB");
 });
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+});
+
 string key = builder.Configuration["Jwt:Key"] ?? "";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -129,24 +134,25 @@ builder.Services.AddMassTransit(busRegistration =>
 
 var app = builder.Build();
 
-// 1. Roteamento base
-app.UseRouting();
+// 1. Redirecionamento HTTPS (Sempre o mais cedo possível)
+app.UseHttpsRedirection();
 
-// 2. Métricas HTTP do Prometheus
+// 2. Métricas HTTP do Prometheus (Captura todas as requisições desde a entrada)
 app.UseHttpMetrics();
 
-// Nota: Bloco de migrations do Entity Framework removido, 
-// pois o MongoDB gerencia coleções dinamicamente.
+// 3. Roteamento base
+app.UseRouting();
 
-// 3. Swagger e Segurança
+// 4. Swagger e SwaggerUI
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
+
+// 5. Segurança: Autenticação SEMPRE antes de Autorização
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 4. Endpoints e Métricas finais
+// 6. Mapeamento de Endpoints e Métricas
 app.MapControllers();
-app.MapMetrics(); // Expõe o /metrics
+app.MapMetrics(); // Expõe o /metrics para o Prometheus
 
 app.Run();

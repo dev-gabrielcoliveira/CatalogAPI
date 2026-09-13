@@ -3,6 +3,8 @@ using FCG.CatalogAPI.Application.Interfaces.Service;
 using FCG.CatalogAPI.Application.Validators;
 using FCG.CatalogAPI.Domain.Entities;
 using FCG.CatalogAPI.Domain.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace FCG.CatalogAPI.Application.Service
 {
@@ -10,23 +12,66 @@ namespace FCG.CatalogAPI.Application.Service
     {
         private readonly IJogoRepository _jogoRepository;
         private readonly JogoValidators _validator;
+        private readonly IDistributedCache _cache;
 
-        public JogoService(IJogoRepository jogoRepository)
+        public JogoService(IJogoRepository jogoRepository, IDistributedCache cache)
         {
             _jogoRepository = jogoRepository;
             _validator = new JogoValidators();
+            _cache = cache;
         }
 
         public async Task<IEnumerable<Jogo>> ObterTodosAsync()
         {
+            string cacheKey = "jogos-todos";
+
+            // 1. Tenta buscar no Redis
+            var cachedJogos = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedJogos))
+            {
+                return JsonSerializer.Deserialize<IEnumerable<Jogo>>(cachedJogos) ?? Enumerable.Empty<Jogo>();
+            }
+
+            // 2. Se não estiver no cache, busca no MongoDB
             var jogos = await _jogoRepository.ObterTodosAsync();
-            return jogos.Where(j => j.Situacao == "Ativo");
+            var jogosAtivos = jogos.Where(j => j.Situacao == "Ativo").ToList();
+
+            // 3. Salva no Redis com expiração de 5 minutos
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            };
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(jogosAtivos), options);
+
+            return jogosAtivos;
         }
 
         public async Task<Jogo?> ObterPorIdAsync(int idJogo)
         {
+            string cacheKey = $"jogo-{idJogo}";
+
+            // 1. Tenta buscar no Redis
+            var cachedJogo = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedJogo))
+            {
+                return JsonSerializer.Deserialize<Jogo>(cachedJogo);
+            }
+
+            // 2. Busca no MongoDB
             var jogo = await _jogoRepository.ObterPorIdAsync(idJogo);
-            return jogo?.Situacao == "Ativo" ? jogo : null;
+            var jogoAtivo = jogo?.Situacao == "Ativo" ? jogo : null;
+
+            if (jogoAtivo != null)
+            {
+                // 3. Salva no Redis
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                };
+                await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(jogoAtivo), options);
+            }
+
+            return jogoAtivo;
         }
 
         public async Task<Jogo> CriarAsync(JogoCriarInput input)
@@ -58,8 +103,12 @@ namespace FCG.CatalogAPI.Application.Service
 
             await _jogoRepository.AdicionarAsync(jogo);
 
+            // Invalida o cache da listagem geral após criar um novo jogo
+            await _cache.RemoveAsync("jogos-todos");
+
             return jogo;
         }
+
         public async Task AtualizarAsync(JogoAtualizarInput input)
         {
             if (!_validator.NomeValido(input.Nome))
@@ -89,6 +138,10 @@ namespace FCG.CatalogAPI.Application.Service
             jogo.Plataformas = input.Plataformas;
 
             await _jogoRepository.AtualizarAsync(jogo);
+
+            // Invalida o cache da lista e o cache específico do jogo atualizado
+            await _cache.RemoveAsync("jogos-todos");
+            await _cache.RemoveAsync($"jogo-{input.IdJogo}");
         }
 
         public async Task ExcluirAsync(int idJogo)
@@ -101,6 +154,10 @@ namespace FCG.CatalogAPI.Application.Service
             jogo.Situacao = "Removido";
 
             await _jogoRepository.AtualizarAsync(jogo);
+
+            // Invalida o cache da lista e o cache específico do jogo removido
+            await _cache.RemoveAsync("jogos-todos");
+            await _cache.RemoveAsync($"jogo-{idJogo}");
         }
     }
 }
