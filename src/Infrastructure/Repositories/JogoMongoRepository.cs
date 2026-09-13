@@ -50,7 +50,7 @@ namespace FCG.CatalogAPI.Infrastructure.Repositories
 
         public async Task AtualizarAsync(Jogo jogo)
         {
-            await _jogosCollection.ReplaceOneAsync(j => j.IdJogo == jogo.IdJogo, jogo);
+           var resultado = await _jogosCollection.ReplaceOneAsync(j => j.IdJogo == jogo.IdJogo, jogo);
         }
     }
 }

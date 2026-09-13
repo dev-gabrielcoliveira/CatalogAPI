@@ -40,6 +40,12 @@ namespace FCG.CatalogAPI.Application.Service
             if (!_validator.PrecoValido(input.Preco))
                 throw new ArgumentException("Preço inválido");
 
+            if (!_validator.GenerosValidos(input.Generos))
+                throw new ArgumentException("Gêneros inválidos ou vazios");
+
+            if (!_validator.PlataformasValidas(input.Plataformas))
+                throw new ArgumentException("Plataformas inválidas ou vazias");
+
             var jogo = new Jogo
             {
                 Nome = input.Nome,
@@ -54,7 +60,6 @@ namespace FCG.CatalogAPI.Application.Service
 
             return jogo;
         }
-
         public async Task AtualizarAsync(JogoAtualizarInput input)
         {
             if (!_validator.NomeValido(input.Nome))
@@ -65,6 +70,12 @@ namespace FCG.CatalogAPI.Application.Service
 
             if (!_validator.PrecoValido(input.Preco))
                 throw new ArgumentException("Preço inválido");
+
+            if (!_validator.GenerosValidos(input.Generos))
+                throw new ArgumentException("Gêneros inválidos ou vazios");
+
+            if (!_validator.PlataformasValidas(input.Plataformas))
+                throw new ArgumentException("Plataformas inválidas ou vazias");
 
             var jogo = await _jogoRepository.ObterPorIdAsync(input.IdJogo);
 

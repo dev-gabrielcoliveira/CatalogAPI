@@ -16,5 +16,14 @@
         {
             return preco >= 0;
         }
+        public bool GenerosValidos(List<string> generos)
+        {
+            return generos != null && generos.Count > 0;
+        }
+
+        public bool PlataformasValidas(List<string> plataformas)
+        {
+            return plataformas != null && plataformas.Count > 0;
+        }
     }
 }
