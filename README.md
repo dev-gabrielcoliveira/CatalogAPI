@@ -1,16 +1,18 @@
 # CatalogAPI
 
-Microsserviço responsável pelo gerenciamento do catálogo de jogos da plataforma FIAP Cloud Games (FCG).
+> Microsserviço responsável pelo gerenciamento do catálogo de jogos e início do fluxo de compras da plataforma FIAP Cloud Games (FCG).
 
-## Sobre o projeto
+---
 
-O CatalogAPI faz parte da arquitetura de microsserviços da plataforma FIAP Cloud Games.
+## 💡 Sobre o projeto
 
-Este serviço é responsável pelo gerenciamento dos jogos disponíveis na plataforma, incluindo cadastro, consulta, atualização e exclusão de jogos, além de iniciar o fluxo de compra através de eventos assíncronos.
+O **CatalogAPI** faz parte da arquitetura de microsserviços da plataforma FIAP Cloud Games (FCG). 
 
-A aplicação foi desenvolvida utilizando .NET 8, Docker e Kubernetes, seguindo uma arquitetura orientada a eventos.
+Este serviço é responsável pelo gerenciamento dos jogos disponíveis na plataforma (cadastro, consulta, atualização e exclusão), gerenciamento da biblioteca dos usuários e pela orquestração inicial do fluxo de compra por meio de eventos assíncronos.
 
-## Responsabilidades
+---
+
+## 🎯 Responsabilidades
 
 - Cadastro de jogos
 - Consulta de jogos
@@ -19,6 +21,45 @@ A aplicação foi desenvolvida utilizando .NET 8, Docker e Kubernetes, seguindo 
 - Gerenciamento da biblioteca de jogos dos usuários
 - Publicação de eventos de compra
 - Consumo de eventos de pagamento
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **.NET 8** (ASP.NET Core Web API)
+- **Entity Framework Core** & **SQL Server**
+- **MassTransit** & **RabbitMQ**
+- **Docker** & **Kubernetes**
+- **Serilog** (Logs estruturados)
+
+---
+
+## 🏗️ Arquitetura Interna
+
+O projeto adota os princípios da Clean Architecture com separação clara de responsabilidades:
+
+- **API:** Controllers, endpoints HTTP e middlewares.
+- **Application:** Casos de uso, serviços da aplicação e *consumers* de eventos.
+- **Domain:** Entidades de domínio e regras de negócio.
+- **Infrastructure:** Persistência de dados (EF Core), repositórios e integrações externas.
+
+---
+
+## 🔄 Mensageria e Fluxo de Eventos
+
+O **CatalogAPI** utiliza comunicação assíncrona orientada a eventos via **RabbitMQ** e **MassTransit**.
+
+### Fluxo de Compra (Visão Geral)
+
+```text
+  [CatalogAPI]  --(RabbitMQ: OrderPlacedEvent)-->  [PaymentsAPI]
+       ^                                                |
+       |-------(RabbitMQ: PaymentProcessedEvent)--------|
+                                                        |
+                                            (Azure Storage Queue)
+                                                        ↓
+                                           [NotificationsAPI.Serverless]
+```
 
 ## Tecnologias utilizadas
 
@@ -31,6 +72,8 @@ A aplicação foi desenvolvida utilizando .NET 8, Docker e Kubernetes, seguindo 
 - Docker
 - Kubernetes
 - Serilog
+- MongoDB
+- Redis (Cache Distribuído)
 
 ## Arquitetura
 
@@ -53,90 +96,7 @@ O projeto possui separação de responsabilidades:
   - Persistência
   - Repositórios
   - Configurações externas
-
-## Mensageria
-
-O CatalogAPI participa do fluxo de compra utilizando comunicação assíncrona através do RabbitMQ e MassTransit.
-
-### Fluxo de compra
-
-```text
-CatalogAPI
-    |
-    | OrderPlacedEvent
-    ↓
-RabbitMQ
-    ↓
-PaymentsAPI
-    |
-    | PaymentProcessedEvent
-    ↓
-CatalogAPI
-    +
-NotificationsAPI
-```
-
-### OrderPlacedEvent
-
-Quando uma compra é iniciada, o CatalogAPI publica o evento:
-
-```
-OrderPlacedEvent
-```
-
-Contendo informações como:
-
-- UserId
-- GameId
-- Price
-
-O PaymentsAPI consome esse evento e realiza o processamento do pagamento.
-
-### PaymentProcessedEvent
-
-Após o processamento do pagamento, o PaymentsAPI publica:
-
-```
-PaymentProcessedEvent
-```
-
-O CatalogAPI consome esse evento.
-
-Quando o pagamento é aprovado:
-
-- O jogo é adicionado à biblioteca do usuário.
-
-Quando o pagamento é rejeitado:
-
-- A compra não é concluída.
-
-## Banco de Dados
-
-O serviço utiliza:
-
-```
-SQL Server
-```
-
-A persistência é realizada utilizando Entity Framework Core e migrations.
-
-As informações sensíveis, como connection strings e chaves privadas, são armazenadas utilizando Kubernetes Secrets.
-
-## Docker
-
-O projeto possui Dockerfile utilizando multi-stage build.
-
-O processo separa:
-
-1. Compilação da aplicação utilizando o SDK do .NET.
-2. Execução utilizando somente o runtime necessário.
-
-Benefícios:
-
-- Imagem final otimizada.
-- Menor consumo de recursos.
-- Maior segurança no ambiente de produção.
-
+  - 
 ## Kubernetes
 
 Os manifestos Kubernetes estão disponíveis na pasta:
@@ -186,7 +146,7 @@ kubectl logs <nome-do-pod>
 
 A aplicação utiliza Serilog para geração de logs estruturados em console.
 
-Em ambiente Kubernetes os logs podem ser acompanhados utilizando os recursos nativos do cluster.
+Em ambiente Kubernetes os logs podem ser acompanhados utilizando os recursos nativos do cluster. E é Monitorada através do Grafana e do Prometheus
 
 Exemplo:
 
