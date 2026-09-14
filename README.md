@@ -66,7 +66,7 @@ O **CatalogAPI** utiliza comunicação assíncrona orientada a eventos via **Rab
                                                         ↓
                                            [NotificationsAPI.Serverless]
 ```
-  - 
+
 ## Kubernetes
 
 Os manifestos Kubernetes estão disponíveis na pasta:
@@ -117,12 +117,6 @@ kubectl logs <nome-do-pod>
 A aplicação utiliza Serilog para geração de logs estruturados em console.
 
 Em ambiente Kubernetes os logs podem ser acompanhados utilizando os recursos nativos do cluster. E é Monitorada através do Grafana e do Prometheus
-
-Exemplo:
-
-```bash
-kubectl logs catalog-deployment-xxxxx
-```
 
 ## Objetivo do serviço
 
