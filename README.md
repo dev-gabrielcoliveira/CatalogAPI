@@ -26,18 +26,13 @@ Este serviço é responsável pelo gerenciamento dos jogos disponíveis na plata
 
 ## 🛠️ Tecnologias Utilizadas
 
-- .NET 8
-- ASP.NET Core Web API
-- Entity Framework Core
-- SQL Server
-- MassTransit
-- RabbitMQ
-- Docker
-- Kubernetes
-- Serilog
-- MongoDB
-- Redis (Cache Distribuído)
-
+- .NET 8 (ASP.NET Core Web API)
+- Persistencia Poliglota com MongoDB e Redis
+- MassTransit & RabbitMQ (Eventos de domínio)
+- Azure Storage Queues & Azure Functions (Processamento de notificações)
+- Docker & Kubernetes
+- Serilog, Prometheus & Grafana (Observabilidade)
+  
 ---
 
 ## 🏗️ Arquitetura Interna
@@ -116,7 +111,7 @@ kubectl logs <nome-do-pod>
 
 A aplicação utiliza Serilog para geração de logs estruturados em console.
 
-Em ambiente Kubernetes os logs podem ser acompanhados utilizando os recursos nativos do cluster. E é Monitorada através do Grafana e do Prometheus
+Em ambiente Kubernetes os logs podem ser acompanhados utilizando os recursos nativos do cluster. E além disso ainda existe um endpoint exposto para acompanhar os dashboards do Grafana através das métricas do Prometheus
 
 ## Objetivo do serviço
 
