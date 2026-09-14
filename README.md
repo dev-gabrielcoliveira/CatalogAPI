@@ -115,4 +115,4 @@ Em ambiente Kubernetes os logs podem ser acompanhados utilizando os recursos nat
 
 ## Objetivo do serviço
 
-O FCG.CatalogAPI representa o microsserviço responsável pelo catálogo de jogos e pela coordenação inicial do processo de compra, utilizando eventos para comunicação desacoplada com os demais serviços da plataforma FIAP Cloud Games.
+O CatalogAPI representa o microsserviço responsável pelo catálogo de jogos e pela coordenação inicial do processo de compra, utilizando eventos para comunicação desacoplada com os demais serviços da plataforma FIAP Cloud Games.
