@@ -10,10 +10,12 @@ namespace FCG.CatalogAPI.Controllers
     public class ComprasController : ControllerBase
     {
         private readonly ICompraService _compraService;
+        private readonly ILogger<JogosController> _logger;
 
-        public ComprasController(ICompraService compraService)
+        public ComprasController(ICompraService compraService, ILogger<JogosController> logger)
         {
             _compraService = compraService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -31,10 +33,21 @@ namespace FCG.CatalogAPI.Controllers
         [Authorize(Policy = "Usuario")]
         public async Task<IActionResult> EfetuarCompra([FromBody] CompraInput input)
         {
-            await _compraService.EfetuarCompra(input);
+            try
+            {
+                await _compraService.EfetuarCompra(input);
 
-            return Accepted();
-
+                return Accepted();
+            } 
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { mensagem = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao efetuar a compra");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Erro interno no servidor." });
+            }
         }
     }
 }

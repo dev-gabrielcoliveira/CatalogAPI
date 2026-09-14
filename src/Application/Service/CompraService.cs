@@ -30,7 +30,7 @@ namespace FCG.CatalogAPI.Application.Service
             var jogo = await _jogoService.ObterPorIdAsync(input.IdJogo);
 
             if (jogo == null)
-                throw new KeyNotFoundException("Jogo não encontrado.");
+                throw new ArgumentException("Jogo não foi encontrado.");
 
             var orderPlacedEvent = new OrderPlacedEvent
             {
