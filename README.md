@@ -26,11 +26,17 @@ Este serviço é responsável pelo gerenciamento dos jogos disponíveis na plata
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **.NET 8** (ASP.NET Core Web API)
-- **Entity Framework Core** & **SQL Server**
-- **MassTransit** & **RabbitMQ**
-- **Docker** & **Kubernetes**
-- **Serilog** (Logs estruturados)
+- .NET 8
+- ASP.NET Core Web API
+- Entity Framework Core
+- SQL Server
+- MassTransit
+- RabbitMQ
+- Docker
+- Kubernetes
+- Serilog
+- MongoDB
+- Redis (Cache Distribuído)
 
 ---
 
@@ -60,42 +66,6 @@ O **CatalogAPI** utiliza comunicação assíncrona orientada a eventos via **Rab
                                                         ↓
                                            [NotificationsAPI.Serverless]
 ```
-
-## Tecnologias utilizadas
-
-- .NET 8
-- ASP.NET Core Web API
-- Entity Framework Core
-- SQL Server
-- MassTransit
-- RabbitMQ
-- Docker
-- Kubernetes
-- Serilog
-- MongoDB
-- Redis (Cache Distribuído)
-
-## Arquitetura
-
-O projeto possui separação de responsabilidades:
-
-- **API**
-  - Controllers
-  - Endpoints HTTP
-
-- **Application**
-  - Casos de uso
-  - Serviços da aplicação
-  - Consumers de eventos
-
-- **Domain**
-  - Entidades
-  - Regras de negócio
-
-- **Infrastructure**
-  - Persistência
-  - Repositórios
-  - Configurações externas
   - 
 ## Kubernetes
 
