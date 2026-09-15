@@ -24,24 +24,23 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: ConnectionStrings__Redis
+              value: "redis:6379"
             - name: ConnectionStrings__MongoDbConnection
               valueFrom:
                 secretKeyRef:
                   name: catalog-secret
                   key: ConnectionStrings__MongoDbConnection
-
             - name: Jwt__Key
               valueFrom:
                 secretKeyRef:
                   name: catalog-secret
                   key: jwt-key
-
             - name: Jwt__Issuer
               valueFrom:
                 secretKeyRef:
                   name: catalog-secret
                   key: jwt-issuer
-
           envFrom:
             - configMapRef:
                 name: catalog-config
